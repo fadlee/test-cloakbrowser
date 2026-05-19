@@ -7,7 +7,8 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon --watch src --watch server.js --watch public server.js",
-    "headed": "cross-env HEADLESS=false node server.js"
+    "headed": "cross-env HEADLESS=false node server.js",
+    "headed:dev": "cross-env HEADLESS=false nodemon --watch src --watch server.js --watch public server.js"
   },
   "keywords": [],
   "author": "",

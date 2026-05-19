@@ -54,6 +54,34 @@ export class BrowserManager {
     }
   }
 
+  /**
+   * Take a screenshot of the browser.
+   * If url is provided, opens a new page, navigates to it, takes screenshot, then closes.
+   * If url is omitted, takes a screenshot of a blank page.
+   *
+   * @param {string} [url]
+   * @returns {Promise<Buffer>} PNG buffer
+   */
+  async screenshot(url) {
+    if (!this._browser) {
+      const err = new Error('Browser is not running');
+      err.code = 'BROWSER_NOT_READY';
+      throw err;
+    }
+
+    const context = await this.acquireContext();
+    try {
+      const page = await context.newPage();
+      if (url) {
+        await page.goto(url, { waitUntil: 'networkidle' });
+      }
+      const buffer = await page.screenshot({ type: 'png' });
+      return buffer;
+    } finally {
+      await this.releaseContext(context);
+    }
+  }
+
   async shutdown() {
     if (!this._browser) return;
     try {

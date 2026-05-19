@@ -194,3 +194,49 @@ function renderEmpty(message) {
   div.textContent = message;
   return div;
 }
+
+const screenshotForm = document.getElementById('screenshot-form');
+const screenshotUrlInput = document.getElementById('screenshot-url');
+const screenshotBtn = document.getElementById('screenshot-btn');
+const screenshotResult = document.getElementById('screenshot-result');
+
+screenshotForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const url = screenshotUrlInput.value.trim();
+
+  screenshotBtn.disabled = true;
+  screenshotBtn.textContent = 'Taking screenshot...';
+  screenshotUrlInput.disabled = true;
+  screenshotResult.innerHTML = '';
+  showStatus('Taking screenshot...', 'info');
+
+  try {
+    const body = url ? JSON.stringify({ url }) : JSON.stringify({});
+    const res = await fetch('/screenshot', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body,
+    });
+
+    if (!res.ok) {
+      const data = await res.json();
+      showStatus(`Error: ${data.error || 'Unknown error'}`, 'error');
+      return;
+    }
+
+    const blob = await res.blob();
+    const objectUrl = URL.createObjectURL(blob);
+    const img = document.createElement('img');
+    img.src = objectUrl;
+    img.alt = url ? `Screenshot of ${url}` : 'Screenshot';
+    img.className = 'screenshot-img';
+    screenshotResult.appendChild(img);
+    showStatus('Screenshot taken.', 'success');
+  } catch (err) {
+    showStatus(`Network error: ${err.message}`, 'error');
+  } finally {
+    screenshotBtn.disabled = false;
+    screenshotBtn.textContent = 'Screenshot';
+    screenshotUrlInput.disabled = false;
+  }
+});

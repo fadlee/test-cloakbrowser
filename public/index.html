@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Google Search Scraper</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Google Search Scraper</h1>
+      <p class="subtitle">Powered by CloakBrowser</p>
+    </header>
+
+    <form id="search-form" class="search-form">
+      <input
+        type="text"
+        id="query"
+        name="query"
+        placeholder="Type your search query..."
+        autocomplete="off"
+        required
+      />
+      <select id="pages" name="pages" title="Number of pages">
+        <option value="1">1 page</option>
+        <option value="2">2 pages</option>
+        <option value="3">3 pages</option>
+      </select>
+      <button type="submit" id="submit-btn">Search</button>
+    </form>
+
+    <div id="status" class="status hidden"></div>
+
+    <section id="results" class="results"></section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>

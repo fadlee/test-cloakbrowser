@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import express from 'express';
 import { BrowserManager } from './src/browser-manager.js';
 import { SearchService } from './src/search-service.js';
+import { SerialQueue } from './src/queue.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -15,6 +16,7 @@ const HEADLESS = process.env.HEADLESS !== 'false';
 async function main() {
   const browserManager = new BrowserManager({ headless: HEADLESS });
   const searchService = new SearchService(browserManager);
+  const screenshotQueue = new SerialQueue();
 
   // Pre-warm browser so first request is fast
   console.log('[server] launching CloakBrowser...');
@@ -43,6 +45,23 @@ async function main() {
         : code === 'BLOCKED' || code === 'CAPTCHA' ? 429
         : 500;
       console.error('[server] search error:', code, err.message);
+      res.status(status).json({ error: err.message, code });
+    }
+  });
+
+  app.post('/screenshot', async (req, res) => {
+    const { url } = req.body || {};
+    if (url !== undefined && typeof url !== 'string') {
+      return res.status(400).json({ error: '"url" must be a string' });
+    }
+    try {
+      const buffer = await screenshotQueue.run(() => browserManager.screenshot(url));
+      res.set('Content-Type', 'image/png');
+      res.send(buffer);
+    } catch (err) {
+      const code = err.code || 'INTERNAL_ERROR';
+      const status = code === 'BROWSER_NOT_READY' ? 503 : 500;
+      console.error('[server] screenshot error:', code, err.message);
       res.status(status).json({ error: err.message, code });
     }
   });
